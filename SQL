@@ -22,3 +22,96 @@ SELECT DISTINCT mv.year
             ON mv.mID = ra.mID
     WHERE ra.stars >= 4
 ORDER BY mv.year;
+
+-- Q3 Find the titles of all movies that have no ratings.
+SELECT mv.title
+    FROM Movie as mv
+        LEFT JOIN Rating as rv
+            ON mv.mID = rv.MID
+        WHERE rv.mid IS NULL;
+
+-- Q4 Some reviewers didn't provide a date with their rating. Find the names of all reviewers who have ratings with a NULL value for the date.
+SELECT re.name
+    FROM Reviewer as re
+    LEFT JOIN Rating as ra
+        ON re.rID = ra.rID
+    WHERE ra.ratingDate IS NULL;
+
+-- Q5 Write a query to return the ratings data in a more readable format: reviewer name, movie title, stars, and ratingDate. Also, sort the data, first by reviewer name, then by movie title, and lastly by number of stars.
+SELECT re.name, mv.title, ra.stars, ra.ratingDate
+    FROM Movie as mv
+     JOIN Rating as ra
+         on mv.mID = ra.mID
+     JOIN Reviewer as re
+         on ra.rID = re.rID
+ORDER BY re.name, mv.title, ra.stars;
+
+-- Q6 For all cases where the same reviewer rated the same movie twice and gave it a higher rating the second time, return the reviewer's name and the title of the movie.
+SELECT re.name, title
+    FROM Movie as mv
+        INNER JOIN Rating as ra1
+            ON mv.mID = ra1.mID
+        INNER JOIN Rating as ra2
+            ON (mv.mID = ra2.mID AND ra1.rID = ra2.rID)
+        INNER JOIN Reviewer as re
+            ON (ra1.rID = re.rID)
+    WHERE (ra1.Stars < ra2.Stars AND ra1.ratingDate < ra2.ratingDate)
+
+-- Q7 For each movie that has at least one rating, find the highest number of stars that movie received. Return the movie title and number of stars. Sort by movie title.
+SELECT mv.title, MAX(ra.Stars) as mostStars
+    From Movie as mv
+    INNER JOIN Rating as ra
+        ON mv.mID = ra.mID
+    GROUP BY mv.mID
+ORDER BY mv.title
+
+-- Q8 For each movie, return the title and the 'rating spread', that is, the difference between highest and lowest ratings given to that movie. Sort by rating spread from highest to lowest, then by movie title.
+SELECT mv.title as title, (MAX(ra.stars) - MIN(ra.stars)) as ratingSpread
+    FROM Movie as mv
+        INNER JOIN Rating as ra
+            ON mv.mID = ra.mID
+    GROUP BY mv.mID
+ORDER BY ratingSpread DESC, mv.title
+
+-- Q9 Find the difference between the average rating of movies released before 1980 and the average rating of movies released after 1980. (Make sure to calculate the average rating for each movie, then the average of those averages for movies before 1980 and movies after. Don't just calculate the overall average rating before and after 1980.)
+SELECT AVG(Before1980.avg) - AVG(After1980.avg)
+FROM (
+  SELECT AVG(stars) AS avg
+  FROM Movie
+  INNER JOIN Rating USING(mId)
+  WHERE year < 1980
+  GROUP BY mId
+) AS Before1980,
+(
+  SELECT AVG(stars) AS avg
+  FROM Movie
+  INNER JOIN Rating USING(mId)
+  WHERE year > 1980
+  GROUP BY mId
+) AS After1980;
+
+-- Q1 Find the names of all reviewers who rated Gone with the Wind.
+SELECT DISTINCT re.name
+    FROM Reviewer as re
+    LEFT JOIN Rating as ra
+        on re.rID = ra.rID
+    LEFT JOIN Movie as mv
+        on mv.mID = ra.mID
+    WHERE mv.title LIKE 'Gone with the Wind'
+
+-- Q2 For any rating where the reviewer is the same as the director of the movie, return the reviewer name, movie title, and number of stars.
+SELECT re.name, mv.title, ra.stars
+    FROM Reviewer as re
+        INNER JOIN Rating as ra
+            ON re.rID = ra.rID
+        INNER JOIN Movie as mv
+            ON ra.mID = mv.mID
+    WHERE mv.director = re.name
+
+-- Q3 Return all reviewer names and movie names together in a single list, alphabetized. (Sorting by the first name of the reviewer and first word in the title is fine; no need for special processing on last names or removing "The".)
+SELECT DISTINCT name
+    FROM Reviewer
+UNION
+Select DISTINCT title
+    From Movie
+ORDER BY Reviewer.name, Movie.title
