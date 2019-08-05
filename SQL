@@ -1,0 +1,24 @@
+-- From https://lagunita.stanford.edu/courses/DB/SQL/SelfPaced/courseware/ch-sql/seq-exercise-sql_movie_query_core/?activate_block_id=i4x%3A%2F%2FDB%2FSQL%2Fsequential%2Fseq-exercise-sql_movie_query_core
+
+--You've started a new movie-rating website, and you've been collecting data on reviewers' ratings of various movies. There's not much data yet, but you can still try out some interesting queries. Here's the schema:
+
+--Movie ( mID, title, year, director ) English: There is a movie with ID number mID, a title, a release year, and a director.
+
+--Reviewer ( rID, name ) English: The reviewer with ID number rID has a certain name.
+
+--Rating ( rID, mID, stars, ratingDate )  English: The reviewer rID gave the movie mID a number of stars rating (1-5) on a certain ratingDate.
+
+-- Your queries will run over a small data set conforming to the schema. View the database. (You can also download the schema and data.)
+
+-- Q1: Find the titles of all movies directed by Steven Spielberg.
+SELECT title
+    FROM Movie
+    WHERE director LIKE 'Steven Spielberg';
+
+-- Q2: Find all years that have a movie that received a rating of 4 or 5, and sort them in increasing order.
+SELECT DISTINCT mv.year
+    FROM Movie as mv
+        LEFT JOIN Rating as ra
+            ON mv.mID = ra.mID
+    WHERE ra.stars >= 4
+ORDER BY mv.year;
